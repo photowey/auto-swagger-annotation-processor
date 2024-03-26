@@ -92,7 +92,11 @@ public class AutoApiProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment env) {
         if (AutoConstants.determineAutoSwaggerAnnotationIsEnabled()) {
             this.processAutoApis(annotations, env);
+
+            return true;
         }
+
+        this.removeProxyAnnotation(annotations, env);
 
         return true;
     }
@@ -111,5 +115,21 @@ public class AutoApiProcessor extends AbstractProcessor {
 
     private void processAutoApi(Element element) {
         this.apiBuilder.build(element);
+    }
+
+    // ----------------------------------------------------------------
+
+    private void removeProxyAnnotation(Set<? extends TypeElement> annotations, RoundEnvironment env) {
+        Set<? extends Element> elements = env.getElementsAnnotatedWith(AutoApi.class);
+
+        for (Element element : elements) {
+            if (element.getKind().isClass()) {
+                this.removeAutoApi(element);
+            }
+        }
+    }
+
+    private void removeAutoApi(Element element) {
+        this.apiBuilder.remove(element);
     }
 }

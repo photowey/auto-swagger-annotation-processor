@@ -16,11 +16,14 @@
 package io.github.photowey.auto.swagger.context;
 
 import com.sun.source.util.Trees;
+import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.TreeMaker;
+import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Names;
 
 import javax.annotation.processing.Filer;
 import javax.annotation.processing.Messager;
+import javax.lang.model.element.Element;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
 import java.io.Serializable;
@@ -43,6 +46,26 @@ public class AutoContext implements Serializable {
 
     private TreeMaker treeMaker;
     private Names names;
+
+    // ----------------------------------------------------------------
+
+    public JCTree.JCVariableDecl toVariable(Element element) {
+        return (JCTree.JCVariableDecl) this.trees().getTree(element);
+    }
+
+    public Name fromString(String name) {
+        return this.names.fromString(name);
+    }
+
+    public JCTree.JCExpression literal(Object target) {
+        return this.treeMaker.Literal(target);
+    }
+
+    public JCTree.JCExpression assign(Name name, JCTree.JCExpression expr) {
+        return this.treeMaker().Assign(this.treeMaker().Ident(name), expr);
+    }
+
+    // ----------------------------------------------------------------
 
     public static AutoContextBuilder builder() {
         return new AutoContextBuilder();

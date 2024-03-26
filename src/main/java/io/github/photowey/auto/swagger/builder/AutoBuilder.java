@@ -27,4 +27,6 @@ import javax.lang.model.element.Element;
 public interface AutoBuilder extends Builder {
 
     void build(Element element);
+
+    void remove(Element element);
 }

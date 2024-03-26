@@ -15,6 +15,7 @@
  */
 package io.github.photowey.auto.swagger.builder;
 
+import io.github.photowey.auto.swagger.annotation.AutoApiModel;
 import io.github.photowey.auto.swagger.context.AutoContext;
 
 import javax.lang.model.element.Element;
@@ -35,5 +36,11 @@ public class AutoApiModelBuilder extends AbstractAutoBuilder {
     @Override
     public void build(Element element) {
 
+    }
+
+    @Override
+    public void remove(Element element) {
+        // Remove: @AutoApiModel
+        super.doRemoveIfNecessary(element, AutoApiModel.class);
     }
 }
