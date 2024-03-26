@@ -34,6 +34,7 @@ import javax.lang.model.element.Element;
 public class AutoApiModelPropertyBuilder extends AbstractAutoBuilder {
 
     private static final String API_MODEL_PROPERTY_FULL_QUALIFIED_NAME = "io.swagger.annotations.ApiModelProperty";
+    private static final String API_MODEL_PROPERTY_FULL_SIMPLE_NAME = "ApiModelProperty";
 
     public AutoApiModelPropertyBuilder(AutoContext context) {
         super(context);
@@ -45,33 +46,33 @@ public class AutoApiModelPropertyBuilder extends AbstractAutoBuilder {
         this.handleVariableDeclareClassImportAdd(element, API_MODEL_PROPERTY_FULL_QUALIFIED_NAME);
     }
 
+    @Override
+    public void remove(Element element) {
+        // Remove: @AutoApiModelProperty
+        super.doRemoveIfNecessary(element, AutoApiModelProperty.class);
+    }
+
     private void handleAddAnnotation(Element element) {
-        JCTree.JCVariableDecl variable = (JCTree.JCVariableDecl) this.context.trees().getTree(element);
+        JCTree.JCVariableDecl variable = this.context.toVariable(element);
         AutoApiModelProperty auto = element.getAnnotation(AutoApiModelProperty.class);
-        Name vn = this.context.names().fromString("value");
-        JCTree.JCExpression vv = this.context.treeMaker().Literal(auto.value());
 
-        Name en = this.context.names().fromString("example");
-        JCTree.JCExpression ev = this.context.treeMaker().Literal(auto.example());
+        Name vn = this.context.fromString("value");
+        JCTree.JCExpression vv = this.context.literal(auto.value());
 
-        JCTree.JCExpression valueExpr = this.context.treeMaker().Assign(this.context.treeMaker().Ident(vn), vv);
-        JCTree.JCExpression exampleExpr = this.context.treeMaker().Assign(this.context.treeMaker().Ident(en), ev);
+        Name en = this.context.fromString("example");
+        JCTree.JCExpression ev = this.context.literal(auto.example());
+
+        JCTree.JCExpression valueExpr = this.context.assign(vn, vv);
+        JCTree.JCExpression exampleExpr = this.context.assign(en, ev);
 
         JCTree.JCAnnotation annotation = this.context.treeMaker().Annotation(
-                this.context.treeMaker().Ident(this.context.names().fromString("ApiModelProperty")),
+                this.context.treeMaker().Ident(this.context.fromString(API_MODEL_PROPERTY_FULL_SIMPLE_NAME)),
                 List.of(valueExpr, exampleExpr)
         );
 
         ListBuffer<JCTree.JCAnnotation> includes = new ListBuffer<>();
         includes.add(annotation);
 
-        List<JCTree.JCAnnotation> annotations = variable.mods.annotations;
-        for (JCTree.JCAnnotation bro : annotations) {
-            if (!bro.getAnnotationType().toString().equals(AutoApiModelProperty.class.getSimpleName())) {
-                includes.add(bro);
-            }
-        }
-
-        variable.mods.annotations = includes.toList();
+        this.removeAutoAnnotationIfNecessary(variable, includes, AutoApiModelProperty.class);
     }
 }

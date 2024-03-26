@@ -29,7 +29,6 @@ import io.github.photowey.auto.swagger.context.AutoContext;
 import javax.annotation.processing.*;
 import javax.lang.model.SourceVersion;
 import javax.lang.model.element.Element;
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
@@ -92,7 +91,11 @@ public class AutoApiModelPropertyProcessor extends AbstractProcessor {
     public boolean process(Set<? extends TypeElement> annotations, RoundEnvironment env) {
         if (AutoConstants.determineAutoSwaggerAnnotationIsEnabled()) {
             this.processAutoApiModelProperties(annotations, env);
+
+            return true;
         }
+
+        this.removeProxyAnnotation(annotations, env);
 
         return true;
     }
@@ -103,7 +106,7 @@ public class AutoApiModelPropertyProcessor extends AbstractProcessor {
         Set<? extends Element> elements = env.getElementsAnnotatedWith(AutoApiModelProperty.class);
 
         for (Element element : elements) {
-            if (element.getKind() == ElementKind.FIELD) {
+            if (element.getKind().isField()) {
                 this.processAutoApiModelProperty(element);
             }
         }
@@ -111,5 +114,21 @@ public class AutoApiModelPropertyProcessor extends AbstractProcessor {
 
     private void processAutoApiModelProperty(Element element) {
         this.apiModelPropertyBuilder.build(element);
+    }
+
+    // ----------------------------------------------------------------
+
+    private void removeProxyAnnotation(Set<? extends TypeElement> annotations, RoundEnvironment env) {
+        Set<? extends Element> elements = env.getElementsAnnotatedWith(AutoApiModelProperty.class);
+
+        for (Element element : elements) {
+            if (element.getKind().isField()) {
+                this.removeAutoApiModelProperty(element);
+            }
+        }
+    }
+
+    private void removeAutoApiModelProperty(Element element) {
+        this.apiModelPropertyBuilder.remove(element);
     }
 }
